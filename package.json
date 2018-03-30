@@ -1,0 +1,78 @@
+{
+  "name": "ddiff",
+  "version": "0.1.0",
+  "description": "Calculate differences between two data structures",
+  "main": "dist/ddiff.js",
+  "umd:main": "dist/ddiff.umd.js",
+  "browser": "dist/ddiff.umd.js",
+  "module": "dist/ddiff.m.js",
+  "source": "src/index.ts",
+  "scripts": {
+    "prelint": "prettier --write \"src/**/*.ts\" --write  --write \"test/**/*.ts\"",
+    "lint": "tslint -p . --fix -t stylish",
+    "test": "npm run lint && npm run spec",
+    "spec": "jest",
+    "spec:watch": "npm run spec -- --watch",
+    "coverage": "npm run spec -- --coverage",
+    "coverage:html": "npm run coverage && http-server ./coverage/lcov-report -o",
+    "coverage:production": "npm run coverage && cat coverage/lcov.info | coveralls",
+    "clean": "rimraf dist",
+    "build": "microbundle build --sourcemap false --target browser",
+    "precommit": "npm test && npm run lint",
+    "prepublish": "npm run clean && npm test && npm run lint && npm run build"
+  },
+  "files": [
+    "dist",
+    "index.d.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thiamsantos/ddiff.git"
+  },
+  "keywords": [
+    "diff",
+    "difference",
+    "deep"
+  ],
+  "author": "Thiago Santos",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/thiamsantos/ddiff/issues"
+  },
+  "homepage": "https://github.com/thiamsantos/ddiff#readme",
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "./node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/test/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
+  },
+  "devDependencies": {
+    "@types/jest": "^22.2.2",
+    "coveralls": "^3.0.0",
+    "http-server": "^0.11.1",
+    "husky": "^0.14.3",
+    "jest": "^22.4.3",
+    "microbundle": "^0.4.4",
+    "prettier": "^1.11.1",
+    "rimraf": "^2.6.2",
+    "ts-jest": "^22.4.2",
+    "tslint": "^5.9.1",
+    "tslint-microsoft-contrib": "^5.0.3",
+    "typescript": "^2.8.1"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "semi": true,
+    "bracketSpacing": false,
+    "trailingComma": "none",
+    "tabWidth": 4,
+    "parser": "typescript"
+  }
+}
