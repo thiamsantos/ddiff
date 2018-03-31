@@ -201,58 +201,6 @@ describe('A target that has a NaN', () => {
     });
 });
 
-describe('When filtering keys', () => {
-    const lhs = {
-        enhancement: 'Filter/Ignore Keys?',
-        numero: 11,
-        submittedBy: 'ericclemmons',
-        supportedBy: ['ericclemmons'],
-        status: 'open'
-    };
-    const rhs = {
-        enhancement: 'Filter/Ignore Keys?',
-        numero: 11,
-        submittedBy: 'ericclemmons',
-        supportedBy: ['ericclemmons', 'TylerGarlick', 'flitbit', 'ergdev'],
-        status: 'closed',
-        fixedBy: 'flitbit'
-    };
-
-    describe('if the filtered property is an array', () => {
-        it('changes to the array do not appear as a difference', () => {
-            const prefilter = function(path, key) {
-                return key === 'supportedBy';
-            };
-            const actual = diff(lhs, rhs, prefilter);
-            expect(actual).toBeTruthy();
-            expect(actual.length).toEqual(2);
-            expect(actual[0]).toHaveProperty('kind');
-            expect(actual[0].kind).toEqual('E');
-            expect(actual[1]).toHaveProperty('kind');
-            expect(actual[1].kind).toEqual('N');
-        });
-    });
-
-    describe('if the filtered property is not an array', () => {
-        it('changes do not appear as a difference', () => {
-            const prefilter = function(path, key) {
-                return key === 'fixedBy';
-            };
-            const actual = diff(lhs, rhs, prefilter);
-            expect(actual).toBeTruthy();
-            expect(actual.length).toEqual(4);
-            expect(actual[0]).toHaveProperty('kind');
-            expect(actual[0].kind).toEqual('A');
-            expect(actual[1]).toHaveProperty('kind');
-            expect(actual[1].kind).toEqual('A');
-            expect(actual[2]).toHaveProperty('kind');
-            expect(actual[2].kind).toEqual('A');
-            expect(actual[3]).toHaveProperty('kind');
-            expect(actual[3].kind).toEqual('E');
-        });
-    });
-});
-
 describe('A target that has nested values', () => {
     const nestedOne = {
         noChange: 'same',

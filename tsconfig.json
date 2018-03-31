@@ -5,5 +5,5 @@
     "lib": ["es2015"],
     "strict": false
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*"]
 }
