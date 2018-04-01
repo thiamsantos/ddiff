@@ -57,20 +57,18 @@ export function diff(
     rhs: DiffObject,
     options: IOptions = {orderIndependent: false}
 ): Difference[] {
-    return deepDiff({lhs, rhs}, [], null, options.orderIndependent);
+    return deepDiff({lhs, rhs}, [], options.orderIndependent);
 }
 
 function deepDiff(
     item: IStackItem,
-    path: Path,
-    key: Key,
+    currentPath: Path,
     orderIndependent: OrderIndependence
 ): Difference[] {
     const currentChanges: Difference[] = [];
 
     const {lhs, rhs} = item;
 
-    const currentPath: Path = getCurrentPath(path, key);
     if (
         is(lhs) === TypeName.RegExp &&
         is(rhs) === TypeName.RegExp &&
@@ -79,19 +77,26 @@ function deepDiff(
         return [];
     }
 
+    if (rhs && is(lhs) === TypeName.null) {
+        return [...currentChanges, createDiffEdited(item, currentPath)];
+    }
+    if (lhs && is(rhs) === TypeName.null) {
+        return [...currentChanges, createDiffEdited(item, currentPath)];
+    }
+
     if (!lhs && rhs) {
-        return [...currentChanges, createDiffNew(item, path)];
+        return [...currentChanges, createDiffNew(item, currentPath)];
     }
 
     if (lhs && !rhs) {
-        return [...currentChanges, createDiffDeleted(item, path)];
+        return [...currentChanges, createDiffDeleted(item, currentPath)];
     }
 
     if (
         is(lhs) !== is(rhs) ||
         (is(lhs) === TypeName.Date && !isSameDate(<Date>lhs, <Date>rhs))
     ) {
-        return [...currentChanges, createDiffEdited(item, path)];
+        return [...currentChanges, createDiffEdited(item, currentPath)];
     }
 
     if (is(lhs) === TypeName.Array) {
@@ -130,15 +135,15 @@ function deepDiffObject(
     const leftHandKeys = Object.keys(lhs);
     const rightHandKeys = Object.keys(rhs);
 
-    const currentChanges: Difference[] = [];
+    let currentChanges: Difference[] = [];
     for (const key of leftHandKeys) {
         const rightHandContainsKey = rightHandKeys.includes(key);
         const rightHand = rightHandContainsKey ? rhs[key] : undefined;
-        currentChanges.concat(
+
+        currentChanges = currentChanges.concat(
             deepDiff(
                 {lhs: lhs[key], rhs: rightHand},
-                currentPath,
-                key,
+                currentPath.concat(key),
                 orderIndependent
             )
         );
@@ -149,11 +154,10 @@ function deepDiffObject(
     );
 
     for (const key of uniqueRightKeys) {
-        currentChanges.concat(
+        currentChanges = currentChanges.concat(
             deepDiff(
                 {lhs: undefined, rhs: rhs[key]},
-                currentPath,
-                key,
+                currentPath.concat(key),
                 orderIndependent
             )
         );
@@ -208,8 +212,7 @@ function deepDiffArray(
         allChanges = allChanges.concat(
             deepDiff(
                 {lhs: lhs[index], rhs: rhs[index]},
-                currentPath,
-                index,
+                currentPath.concat(index),
                 orderIndependent
             )
         );

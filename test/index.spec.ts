@@ -74,24 +74,12 @@ describe('A target that has no properties', () => {
                 another: 13.13
             };
             const actual = diff({}, comparand);
-            expect(actual).toBeTruthy();
-            expect(actual.length).toEqual(2);
+            const expected = [
+                {kind: 'N', path: ['other'], rhs: 'property', lhs: undefined},
+                {kind: 'N', path: ['another'], rhs: 13.13, lhs: undefined}
+            ];
 
-            expect(actual[0]).toHaveProperty('kind');
-            expect(actual[0].kind).toEqual('N');
-            expect(actual[0]).toHaveProperty('path');
-            expect(actual[0].path).toBeInstanceOf(Array);
-            expect(actual[0].path[0]).toEqual('other');
-            expect(actual[0]).toHaveProperty('rhs');
-            expect(actual[0].rhs).toEqual('property');
-
-            expect(actual[1]).toHaveProperty('kind');
-            expect(actual[1].kind).toEqual('N');
-            expect(actual[1]).toHaveProperty('path');
-            expect(actual[1].path).toBeInstanceOf(Array);
-            expect(actual[1].path[0]).toEqual('another');
-            expect(actual[1]).toHaveProperty('rhs');
-            expect(actual[1].rhs).toEqual(13.13);
+            expect(actual).toEqual(expected);
         });
     });
 });
