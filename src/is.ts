@@ -30,7 +30,8 @@ export const enum TypeName {
     ArrayBuffer = 'ArrayBuffer',
     SharedArrayBuffer = 'SharedArrayBuffer',
     DataView = 'DataView',
-    Promise = 'Promise'
+    Promise = 'Promise',
+    NaN = 'Nan'
 }
 
 export const toString = value => Object.prototype.toString.call(value);
@@ -68,6 +69,10 @@ export function is(value: any): TypeName {
     }
 
     if (type === 'number' || value instanceof Number) {
+        if (Number.isNaN(value)) {
+            return TypeName.NaN;
+        }
+
         return TypeName.number;
     }
 

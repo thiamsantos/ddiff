@@ -1,9 +1,8 @@
-import {is, toString, TypeName} from './is';
+import {is, TypeName} from './is';
 
 type Key = string | number;
 type Path = Key[];
 type DiffObject = any;
-type OrderIndependence = boolean;
 
 interface IStackItem {
     lhs: DiffObject;
@@ -20,15 +19,9 @@ interface IStackObjectItem {
     rhs: Object;
 }
 
-type Stack = IStackItem[];
-
 enum StackProperty {
     Lhs = 'lhs',
     Rhs = 'rhs'
-}
-
-export interface IOptions {
-    orderIndependent?: OrderIndependence;
 }
 
 export enum Kind {
@@ -52,74 +45,52 @@ export interface IArrayDifference {
 
 type Difference = INormalDifference | IArrayDifference;
 
-export function diff(
-    lhs: DiffObject,
-    rhs: DiffObject,
-    options: IOptions = {orderIndependent: false}
-): Difference[] {
-    return deepDiff({lhs, rhs}, [], options.orderIndependent);
+export function diff(lhs: DiffObject, rhs: DiffObject): Difference[] {
+    return deepDiff({lhs, rhs}, []);
 }
 
-function deepDiff(
-    item: IStackItem,
-    currentPath: Path,
-    orderIndependent: OrderIndependence
-): Difference[] {
-    const currentChanges: Difference[] = [];
-
+function deepDiff(item: IStackItem, currentPath: Path): Difference[] {
     const {lhs, rhs} = item;
 
-    if (
-        is(lhs) === TypeName.RegExp &&
-        is(rhs) === TypeName.RegExp &&
-        toString(lhs) === toString(rhs)
-    ) {
+    if (Object.is(lhs, rhs)) {
         return [];
     }
 
-    if (rhs && is(lhs) === TypeName.null) {
-        return [...currentChanges, createDiffEdited(item, currentPath)];
-    }
-    if (lhs && is(rhs) === TypeName.null) {
-        return [...currentChanges, createDiffEdited(item, currentPath)];
-    }
-
-    if (!lhs && rhs) {
-        return [...currentChanges, createDiffNew(item, currentPath)];
+    if (is(lhs) === TypeName.RegExp && is(rhs) === TypeName.RegExp) {
+        return deepDiff(
+            {lhs: lhs.toString(), rhs: rhs.toString()},
+            currentPath
+        );
     }
 
-    if (lhs && !rhs) {
-        return [...currentChanges, createDiffDeleted(item, currentPath)];
+    if (is(lhs) === TypeName.undefined && rhs) {
+        return [createDiffNew(item, currentPath)];
+    }
+
+    if ((lhs || is(lhs) === TypeName.null) && is(rhs) === TypeName.undefined) {
+        return [createDiffDeleted(item, currentPath)];
     }
 
     if (
         is(lhs) !== is(rhs) ||
         (is(lhs) === TypeName.Date && !isSameDate(<Date>lhs, <Date>rhs))
     ) {
-        return [...currentChanges, createDiffEdited(item, currentPath)];
+        return [createDiffEdited(item, currentPath)];
     }
 
     if (is(lhs) === TypeName.Array) {
-        const arrayChanges: Difference[] = deepDiffArray(
-            <IStackArrayItem>item,
-            currentPath,
-            orderIndependent
-        );
-
-        return [...currentChanges, ...arrayChanges];
+        return deepDiffArray(<IStackArrayItem>item, currentPath);
     }
 
     if (is(lhs) === TypeName.Object) {
-        const objectChanges: Difference[] = deepDiffObject(
-            <IStackObjectItem>item,
-            currentPath,
-            orderIndependent
-        );
-
-        return [...currentChanges, ...objectChanges];
+        return deepDiffObject(<IStackObjectItem>item, currentPath);
     }
 
-    return currentChanges;
+    if (is(lhs) === TypeName.null || is(lhs) === TypeName.undefined) {
+        return [];
+    }
+
+    return [createDiffEdited(item, currentPath)];
 }
 
 function isSameDate(leftDate: Date, rightDate: Date): boolean {
@@ -128,23 +99,33 @@ function isSameDate(leftDate: Date, rightDate: Date): boolean {
 
 function deepDiffObject(
     item: IStackObjectItem,
-    currentPath: Path,
-    orderIndependent: OrderIndependence
+    currentPath: Path
 ): Difference[] {
     const {lhs, rhs} = item;
     const leftHandKeys = Object.keys(lhs);
     const rightHandKeys = Object.keys(rhs);
 
     let currentChanges: Difference[] = [];
-    for (const key of leftHandKeys) {
-        const rightHandContainsKey = rightHandKeys.includes(key);
-        const rightHand = rightHandContainsKey ? rhs[key] : undefined;
 
+    const keysInBothSides = leftHandKeys.filter(key =>
+        rightHandKeys.includes(key)
+    );
+
+    for (const key of keysInBothSides) {
         currentChanges = currentChanges.concat(
-            deepDiff(
-                {lhs: lhs[key], rhs: rightHand},
-                currentPath.concat(key),
-                orderIndependent
+            deepDiff({lhs: lhs[key], rhs: rhs[key]}, currentPath.concat(key))
+        );
+    }
+
+    const uniqueLeftKeys = leftHandKeys.filter(
+        key => !rightHandKeys.includes(key)
+    );
+
+    for (const key of uniqueLeftKeys) {
+        currentChanges = currentChanges.concat(
+            createDiffDeleted(
+                {lhs: lhs[key], rhs: undefined},
+                currentPath.concat(key)
             )
         );
     }
@@ -155,10 +136,9 @@ function deepDiffObject(
 
     for (const key of uniqueRightKeys) {
         currentChanges = currentChanges.concat(
-            deepDiff(
+            createDiffNew(
                 {lhs: undefined, rhs: rhs[key]},
-                currentPath.concat(key),
-                orderIndependent
+                currentPath.concat(key)
             )
         );
     }
@@ -166,11 +146,7 @@ function deepDiffObject(
     return currentChanges;
 }
 
-function deepDiffArray(
-    item: IStackArrayItem,
-    currentPath: Path,
-    orderIndependent: OrderIndependence
-): Difference[] {
+function deepDiffArray(item: IStackArrayItem, currentPath: Path): Difference[] {
     const {lhs, rhs} = item;
 
     let allChanges: Difference[] = [];
@@ -208,12 +184,14 @@ function deepDiffArray(
         allChanges = allChanges.concat(arrayChanges);
     }
 
-    for (let index = 0; index < rhs.length; index++) {
+    for (let index = 0; index < lhs.length; index++) {
+        if (index > rhs.length) {
+            continue;
+        }
         allChanges = allChanges.concat(
             deepDiff(
                 {lhs: lhs[index], rhs: rhs[index]},
-                currentPath.concat(index),
-                orderIndependent
+                currentPath.concat(index)
             )
         );
     }
@@ -255,12 +233,4 @@ function createDiffEdited(stack: IStackItem, path?: Path): INormalDifference {
         path: path,
         ...stack
     };
-}
-
-function getCurrentPath(path: Path, key: Key): Path {
-    if (key === null) {
-        return path;
-    }
-
-    return [...path, key];
 }

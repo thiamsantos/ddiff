@@ -131,10 +131,10 @@ describe('A target that has null value', () => {
 
     it('shows the property as removed when compared to an empty object', () => {
         const actual = diff(lhs, {});
-        expect(actual).toBeTruthy();
-        expect(actual.length).toEqual(1);
-        expect(actual[0]).toHaveProperty('kind');
-        expect(actual[0].kind).toEqual('D');
+        const expected = [
+            {kind: 'D', path: ['key'], lhs: null, rhs: undefined}
+        ];
+        expect(actual).toEqual(expected);
     });
 
     it('shows the property is changed when compared to an object that has value', () => {
@@ -177,10 +177,9 @@ describe('A target that has a NaN', () => {
 
     it('shows the property is changed when compared to another number', () => {
         const actual = diff(lhs, {key: 0});
-        expect(actual).toBeTruthy();
-        expect(actual.length).toEqual(1);
-        expect(actual[0]).toHaveProperty('kind');
-        expect(actual[0].kind).toEqual('E');
+        const expected = [{kind: 'E', path: ['key'], lhs: NaN, rhs: 0}];
+
+        expect(actual).toEqual(expected);
     });
 
     it('shows no differences when compared to another NaN', () => {
@@ -232,8 +231,33 @@ describe('A target that has nested values', () => {
 
     it('shows the property is changed when compared to an object that has value', () => {
         const actual = diff(nestedOne, nestedTwo);
-        expect(actual).toBeTruthy();
-        expect(actual.length).toEqual(3);
+        const expected = [
+            {
+                kind: 'E',
+                path: ['levelOne', 'levelTwo'],
+                lhs: 'value',
+                rhs: 'another value'
+            },
+            {
+                kind: 'A',
+                path: ['arrayOne'],
+                item: {
+                    kind: 'N',
+                    path: undefined,
+                    lhs: undefined,
+                    rhs: {objValue: 'more value'}
+                },
+                index: 1
+            },
+            {
+                kind: 'E',
+                path: ['arrayOne', 0, 'objValue'],
+                lhs: 'value',
+                rhs: 'new value'
+            }
+        ];
+
+        expect(actual).toEqual(expected);
     });
 
     it('shows the property as added when compared to an empty object on left', () => {
@@ -303,13 +327,9 @@ describe('Comparing regexes should work', () => {
 
     it('can compare regex instances', () => {
         const actual = diff(lhs, rhs);
+        const expected = [{kind: 'E', path: [], lhs: '/foo/', rhs: '/foo/i'}];
 
-        expect(actual.length).toEqual(1);
-
-        expect(actual[0].kind).toEqual('E');
-        expect(actual[0].path).toBeFalsy();
-        expect(actual[0].lhs).toEqual('/foo/');
-        expect(actual[0].rhs).toEqual('/foo/i');
+        expect(actual).toEqual(expected);
     });
 });
 
@@ -347,28 +367,20 @@ describe('regression test for issue #83', () => {
 describe('regression test for issue #70', () => {
     it('should detect a difference with undefined property on lhs', () => {
         const actual = diff({foo: undefined}, {});
+        const expected = [
+            {kind: 'D', path: ['foo'], lhs: undefined, rhs: undefined}
+        ];
 
-        expect(actual).toBeInstanceOf(Array);
-        expect(actual.length).toEqual(1);
-
-        expect(actual[0].kind).toEqual('D');
-        expect(typeof actual[0].path).toEqual('array');
-        expect(actual[0].path).toHaveLength(1);
-        expect(actual[0].path[0]).toEqual('foo');
-        expect(actual[0].lhs).toEqual(undefined);
+        expect(actual).toEqual(expected);
     });
 
     it('should detect a difference with undefined property on rhs', () => {
         const actual = diff({}, {foo: undefined});
+        const expected = [
+            {kind: 'N', path: ['foo'], rhs: undefined, lhs: undefined}
+        ];
 
-        expect(actual).toBeInstanceOf(Array);
-        expect(actual.length).toEqual(1);
-
-        expect(actual[0].kind).toEqual('N');
-        expect(typeof actual[0].path).toEqual('array');
-        expect(actual[0].path).toHaveLength(1);
-        expect(actual[0].path[0]).toEqual('foo');
-        expect(actual[0].rhs).toEqual(undefined);
+        expect(actual).toEqual(expected);
     });
 });
 
@@ -383,12 +395,9 @@ describe('regression test for issue #98', () => {
 describe('regression tests for issue #102', () => {
     it('should not throw a TypeError', () => {
         const actual = diff(null, undefined);
+        const expected = [{kind: 'D', path: [], lhs: null, rhs: undefined}];
 
-        expect(actual).toBeInstanceOf(Array);
-        expect(actual.length).toEqual(1);
-
-        expect(actual[0].kind).toEqual('D');
-        expect(actual[0].lhs).toEqual(null);
+        expect(actual).toEqual(expected);
     });
 
     it('should not throw a TypeError', () => {
@@ -399,58 +408,5 @@ describe('regression tests for issue #102', () => {
 
         expect(actual[0].kind).toEqual('N');
         expect(actual[0].rhs).toEqual(undefined);
-    });
-});
-
-describe('Order indepedent array comparison should work', () => {
-    it('can compare simple arrays in an order independent fashion', () => {
-        const lhs = [1, 2, 3];
-        const rhs = [1, 3, 2];
-
-        const actual = diff(lhs, rhs, {orderIndependent: true});
-        expect(actual).toEqual([]);
-    });
-
-    it('still works with repeated elements', () => {
-        const lhs = [1, 1, 2];
-        const rhs = [1, 2, 1];
-
-        const actual = diff(lhs, rhs, {orderIndependent: true});
-        expect(actual).toEqual([]);
-    });
-
-    it('works on complex objects', () => {
-        const obj1 = {
-            foo: 'bar',
-            faz: [
-                1,
-                'pie',
-                {
-                    food: 'yum'
-                }
-            ]
-        };
-
-        const obj2 = {
-            faz: [
-                'pie',
-                {
-                    food: 'yum'
-                },
-                1
-            ],
-            foo: 'bar'
-        };
-
-        const actual = diff(obj1, obj2, {orderIndependent: true});
-        expect(actual).toEqual([]);
-    });
-
-    it('should report some difference in non-equal arrays', () => {
-        const lhs = [1, 2, 3];
-        const rhs = [2, 2, 3];
-
-        const actual = diff(lhs, rhs, {orderIndependent: true});
-        expect(actual.length).toBeTruthy();
     });
 });
