@@ -21,6 +21,7 @@
     "precommit": "npm test && npm run lint",
     "prepublish": "npm run clean && npm test && npm run lint && npm run build"
   },
+  "types": "index.d.ts",
   "files": [
     "dist",
     "index.d.ts"
