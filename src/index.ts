@@ -1,28 +1,23 @@
 import {is, TypeName} from './is';
 
 // tslint:disable-next-line:no-any
-type DiffObject = any;
-type Key = string | number;
-type Path = Key[];
+export type DiffObject = any;
+export type Key = string | number;
+export type Path = Key[];
 
-interface IStackItem {
+export interface IStackItem {
     lhs: DiffObject;
     rhs: DiffObject;
 }
 
-interface IStackArrayItem {
+export interface IStackArrayItem {
     lhs: DiffObject[];
     rhs: DiffObject[];
 }
 
-interface IStackObjectItem {
+export interface IStackObjectItem {
     lhs: Object;
     rhs: Object;
-}
-
-enum StackProperty {
-    Lhs = 'lhs',
-    Rhs = 'rhs'
 }
 
 export enum Kind {
@@ -44,7 +39,7 @@ export interface IArrayDifference {
     item: INormalDifference;
 }
 
-type Difference = INormalDifference | IArrayDifference;
+export type Difference = INormalDifference | IArrayDifference;
 
 export function diff(lhs: DiffObject, rhs: DiffObject): Difference[] {
     return deepDiff({lhs, rhs}, []);
