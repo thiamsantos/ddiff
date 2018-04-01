@@ -75,10 +75,6 @@ export function is(value: any): TypeName {
         return TypeName.symbol;
     }
 
-    if (isOfType('function')) {
-        return TypeName.Function;
-    }
-
     if (Array.isArray(value)) {
         return TypeName.Array;
     }
