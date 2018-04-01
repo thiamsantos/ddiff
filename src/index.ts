@@ -1,8 +1,9 @@
 import {is, TypeName} from './is';
 
+// tslint:disable-next-line:no-any
+type DiffObject = any;
 type Key = string | number;
 type Path = Key[];
-type DiffObject = any;
 
 interface IStackItem {
     lhs: DiffObject;
@@ -58,6 +59,7 @@ function deepDiff(item: IStackItem, currentPath: Path): Difference[] {
 
     if (is(lhs) === TypeName.RegExp && is(rhs) === TypeName.RegExp) {
         return deepDiff(
+            // tslint:disable-next-line:no-unsafe-any
             {lhs: lhs.toString(), rhs: rhs.toString()},
             currentPath
         );
@@ -102,48 +104,38 @@ function deepDiffObject(
     currentPath: Path
 ): Difference[] {
     const {lhs, rhs} = item;
-    const leftHandKeys = Object.keys(lhs);
-    const rightHandKeys = Object.keys(rhs);
+    const leftHandKeys: string[] = Object.keys(lhs);
+    const rightHandKeys: string[] = Object.keys(rhs);
 
-    let currentChanges: Difference[] = [];
-
-    const keysInBothSides = leftHandKeys.filter(key =>
-        rightHandKeys.includes(key)
-    );
-
-    for (const key of keysInBothSides) {
-        currentChanges = currentChanges.concat(
+    const keysInBothSides: Difference[] = leftHandKeys
+        // tslint:disable-next-line:no-unsafe-any
+        .filter((key: string) => rightHandKeys.includes(key))
+        .map((key: string) =>
             deepDiff({lhs: lhs[key], rhs: rhs[key]}, currentPath.concat(key))
-        );
-    }
+        )
+        .reduce((a: Difference[], b: Difference[]) => a.concat(b), []);
 
-    const uniqueLeftKeys = leftHandKeys.filter(
-        key => !rightHandKeys.includes(key)
-    );
-
-    for (const key of uniqueLeftKeys) {
-        currentChanges = currentChanges.concat(
+    const uniqueLeftKeys: Difference[] = leftHandKeys
+        // tslint:disable-next-line:no-unsafe-any
+        .filter((key: string) => !rightHandKeys.includes(key))
+        .map((key: string) =>
             createDiffDeleted(
                 {lhs: lhs[key], rhs: undefined},
                 currentPath.concat(key)
             )
         );
-    }
 
-    const uniqueRightKeys = rightHandKeys.filter(
-        key => !leftHandKeys.includes(key)
-    );
-
-    for (const key of uniqueRightKeys) {
-        currentChanges = currentChanges.concat(
+    const uniqueRightKeys: Difference[] = rightHandKeys
+        // tslint:disable-next-line:no-unsafe-any
+        .filter((key: string) => !leftHandKeys.includes(key))
+        .map((key: string) =>
             createDiffNew(
                 {lhs: undefined, rhs: rhs[key]},
                 currentPath.concat(key)
             )
         );
-    }
 
-    return currentChanges;
+    return [...keysInBothSides, ...uniqueLeftKeys, ...uniqueRightKeys];
 }
 
 function deepDiffArray(item: IStackArrayItem, currentPath: Path): Difference[] {
@@ -184,7 +176,7 @@ function deepDiffArray(item: IStackArrayItem, currentPath: Path): Difference[] {
         allChanges = allChanges.concat(arrayChanges);
     }
 
-    for (let index = 0; index < lhs.length; index++) {
+    for (let index: number = 0; index < lhs.length; index++) {
         if (index > rhs.length) {
             continue;
         }

@@ -4,51 +4,21 @@ export const enum TypeName {
     undefined = 'undefined',
     string = 'string',
     number = 'number',
-    symbol = 'symbol',
     Function = 'Function',
-    GeneratorFunction = 'GeneratorFunction',
-    AsyncFunction = 'AsyncFunction',
     Array = 'Array',
-    Buffer = 'Buffer',
     Object = 'Object',
     RegExp = 'RegExp',
     Date = 'Date',
-    Error = 'Error',
-    Map = 'Map',
-    Set = 'Set',
-    WeakMap = 'WeakMap',
-    WeakSet = 'WeakSet',
-    Int8Array = 'Int8Array',
-    Uint8Array = 'Uint8Array',
-    Uint8ClampedArray = 'Uint8ClampedArray',
-    Int16Array = 'Int16Array',
-    Uint16Array = 'Uint16Array',
-    Int32Array = 'Int32Array',
-    Uint32Array = 'Uint32Array',
-    Float32Array = 'Float32Array',
-    Float64Array = 'Float64Array',
-    ArrayBuffer = 'ArrayBuffer',
-    SharedArrayBuffer = 'SharedArrayBuffer',
-    DataView = 'DataView',
-    Promise = 'Promise',
     NaN = 'Nan'
 }
 
-export const toString = value => Object.prototype.toString.call(value);
-const isOfType = (type: string) => (value: any) => typeof value === type;
-const getObjectType = (value: any): TypeName | null => {
-    const objectName = toString(value).slice(8, -1) as string;
+// tslint:disable-next-line:no-any
+export function toString(value: any): string {
+    // tslint:disable-next-line:no-unsafe-any
+    return Object.prototype.toString.call(value);
+}
 
-    if (objectName) {
-        return objectName as TypeName;
-    }
-
-    return null;
-};
-
-const isObjectOfType = (type: TypeName) => (value: any) =>
-    getObjectType(value) === type;
-
+// tslint:disable-next-line:no-any
 export function is(value: any): TypeName {
     if (value === null) {
         return TypeName.null;
@@ -58,35 +28,39 @@ export function is(value: any): TypeName {
         return TypeName.boolean;
     }
 
-    const type = typeof value;
+    const isType: string = typeof value;
 
-    if (type === 'undefined') {
+    if (isType === 'undefined') {
         return TypeName.undefined;
     }
 
-    if (type === 'string' || value instanceof String) {
+    if (isType === 'string' || value instanceof String) {
         return TypeName.string;
     }
 
-    if (type === 'number' || value instanceof Number) {
-        if (Number.isNaN(value)) {
-            return TypeName.NaN;
-        }
-
-        return TypeName.number;
+    if (isType === 'function' || value instanceof Function) {
+        return TypeName.Function;
     }
 
-    if (type === 'symbol') {
-        return TypeName.symbol;
+    // tslint:disable-next-line:no-unsafe-any
+    if (Number.isNaN(value)) {
+        return TypeName.NaN;
+    }
+
+    if (isType === 'number' || value instanceof Number) {
+        return TypeName.number;
     }
 
     if (Array.isArray(value)) {
         return TypeName.Array;
     }
 
-    const tagType = getObjectType(value);
-    if (tagType) {
-        return tagType;
+    if (value instanceof Date || toString(value) === '[object Date]') {
+        return TypeName.Date;
+    }
+
+    if (value instanceof RegExp || toString(value) === '[object RegExp]') {
+        return TypeName.RegExp;
     }
 
     return TypeName.Object;

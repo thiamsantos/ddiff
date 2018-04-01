@@ -36,12 +36,6 @@ describe('A target that has no properties', () => {
                 {
                     key: /a/
                 }
-            ],
-            [
-                'Math',
-                {
-                    key: Math
-                }
             ]
         ];
 
