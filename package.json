@@ -15,7 +15,7 @@
     "spec:watch": "npm run spec -- --watch",
     "coverage": "npm run spec -- --coverage",
     "coverage:html": "npm run coverage && http-server ./coverage/lcov-report -o",
-    "coverage:production": "npm run coverage && cat coverage/lcov.info | coveralls",
+    "coveralls": "npm run coverage && cat coverage/lcov.info | coveralls",
     "clean": "rimraf dist",
     "build": "microbundle build --sourcemap false --target browser",
     "precommit": "npm test && npm run lint",
