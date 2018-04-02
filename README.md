@@ -92,7 +92,7 @@ Change records have the following structure:
 
 ## Credits
 
-The test suite is adapted from [deep-diff](https://github.com/flitbit/diff). @flitbit Thanks for your amazing work. 
+The test suite is adapted from [deep-diff](https://github.com/flitbit/diff). @flitbit Thanks for your amazing work.
 
 ## Contributing
 
