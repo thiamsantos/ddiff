@@ -11,6 +11,7 @@
 
 - [Install](#install)
 - [Usage](#usage)
+- [Credits](#credits)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -88,6 +89,10 @@ Change records have the following structure:
 * `rhs` - the value on the right-hand-side of the comparison (undefined if kind === 'D')
 * `index` - when kind === 'A', indicates the array index where the change occurred
 * `item` - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
+
+## Credits
+
+The test suite is adapted from [deep-diff](https://github.com/flitbit/diff). @flitbit Thanks for your amazing work. 
 
 ## Contributing
 
