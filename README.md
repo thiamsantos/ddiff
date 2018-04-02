@@ -27,7 +27,7 @@ $ npm install --save ddiff
 The [UMD](https://github.com/umdjs/umd) build is also available on [jsdelivr](https://www.jsdelivr.com/):
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/vanilla-commons/dist/ddiff.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ddiff/dist/ddiff.umd.js"></script>
 ```
 
 You can find the library on `window.ddiff`.
