@@ -83,10 +83,6 @@ function deepDiff(item: IStackItem, currentPath: Path): Difference[] {
         return deepDiffObject(<IStackObjectItem>item, currentPath);
     }
 
-    if (is(lhs) === TypeName.null || is(lhs) === TypeName.undefined) {
-        return [];
-    }
-
     return [createDiffEdited(item, currentPath)];
 }
 
@@ -172,7 +168,7 @@ function deepDiffArray(item: IStackArrayItem, currentPath: Path): Difference[] {
     }
 
     for (let index: number = 0; index < lhs.length; index++) {
-        if (index > rhs.length) {
+        if (index >= rhs.length) {
             continue;
         }
         allChanges = allChanges.concat(
@@ -199,14 +195,17 @@ function createDiffArray(
     };
 }
 
-function createDiffNew(stack: IStackItem, path?: Path): INormalDifference {
+function createDiffNew(stack: IStackItem, path: Path = []): INormalDifference {
     return {
         kind: Kind.New,
         path: path,
         ...stack
     };
 }
-function createDiffDeleted(stack: IStackItem, path?: Path): INormalDifference {
+function createDiffDeleted(
+    stack: IStackItem,
+    path: Path = []
+): INormalDifference {
     return {
         kind: Kind.Deleted,
         path: path,
@@ -214,7 +213,10 @@ function createDiffDeleted(stack: IStackItem, path?: Path): INormalDifference {
     };
 }
 
-function createDiffEdited(stack: IStackItem, path?: Path): INormalDifference {
+function createDiffEdited(
+    stack: IStackItem,
+    path: Path = []
+): INormalDifference {
     return {
         kind: Kind.Edited,
         path: path,

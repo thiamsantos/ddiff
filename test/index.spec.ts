@@ -237,7 +237,7 @@ describe('A target that has nested values', () => {
                 path: ['arrayOne'],
                 item: {
                     kind: 'N',
-                    path: undefined,
+                    path: [],
                     lhs: undefined,
                     rhs: {objValue: 'more value'}
                 },
@@ -402,5 +402,59 @@ describe('regression tests for issue #102', () => {
 
         expect(actual[0].kind).toEqual('N');
         expect(actual[0].rhs).toEqual(undefined);
+    });
+});
+
+describe('diff new', () => {
+    it('should return new when the left hand is undefined', () => {
+        const actual = diff(undefined, 'something');
+        const expected = [
+            {
+                kind: 'N',
+                path: [],
+                lhs: undefined,
+                rhs: 'something'
+            }
+        ];
+
+        expect(actual).toEqual(expected);
+    });
+});
+
+describe('null and undefined', () => {
+    it('should return no changes when both sides are null', () => {
+        expect(diff(null, null)).toEqual([]);
+    });
+    it('should return no changes when both sides are undefined', () => {
+        expect(diff(undefined, undefined)).toEqual([]);
+    });
+});
+
+describe('diff array', () => {
+    it('should return delete diff', () => {
+        const actual = diff([1, 2, 3], [1, 2]);
+        const expected = [
+            {
+                kind: 'A',
+                path: [],
+                index: 2,
+                item: {kind: 'D', lhs: 3, rhs: undefined, path: []}
+            }
+        ];
+
+        expect(actual).toEqual(expected);
+    });
+    it('should return new diff', () => {
+        const actual = diff([1, 2], [1, 2, 3]);
+        const expected = [
+            {
+                kind: 'A',
+                path: [],
+                index: 2,
+                item: {kind: 'N', lhs: undefined, rhs: 3, path: []}
+            }
+        ];
+
+        expect(actual).toEqual(expected);
     });
 });
