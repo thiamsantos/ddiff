@@ -13,7 +13,7 @@ export const enum TypeName {
 }
 
 // tslint:disable-next-line:no-any
-export function toString(value: any): string {
+function toString(value: any): string {
     // tslint:disable-next-line:no-unsafe-any
     return Object.prototype.toString.call(value);
 }
@@ -36,10 +36,6 @@ export function is(value: any): TypeName {
 
     if (isType === 'string' || value instanceof String) {
         return TypeName.string;
-    }
-
-    if (isType === 'function' || value instanceof Function) {
-        return TypeName.Function;
     }
 
     // tslint:disable-next-line:no-unsafe-any
