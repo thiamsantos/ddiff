@@ -29,7 +29,7 @@ Pull requests are the greatest contributions, so be sure they are focused in sco
 
 After you had make a fork you will want to keep your fork up to date with the changes that may happen in this repository (upstream).
 
-- Configure the remote for your fork: `git remote add upstream https://github.com/thiamsanto/ddiff.git`
+- Configure the remote for your fork: `git remote add upstream https://github.com/thiamsantos/ddiff.git`
 - Fetch the branches and their respective commits from the upstream repository: `git fetch upstream`
 - Check out your fork's local master branch: `git checkout master`
 - Merge the changes from upstream/master into your local master branch. This brings your fork's master branch into sync with the upstream repository, without losing your local changes: `git merge upstream/master`
